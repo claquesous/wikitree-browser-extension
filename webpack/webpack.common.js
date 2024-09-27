@@ -20,9 +20,10 @@ console.log(JSON.stringify(buildInfo));
 
 module.exports = (env) => ({
   entry: {
-    options: path.join(srcDir, "options.js"),
-    popup: path.join(srcDir, "popup.js"),
-    content: path.join(srcDir, "content.js"),
+    // options: path.join(srcDir, "options.js"),
+    // popup: path.join(srcDir, "popup.js"),
+    // content: path.join(srcDir, "content.js"),
+    treesync: path.join(srcDir, "treesync.js"),
   },
   output: {
     path: path.join(__dirname, "../dist/js"),
@@ -32,14 +33,14 @@ module.exports = (env) => ({
       dynamicImport: true,
     },
   },
-  optimization: {
-    splitChunks: {
-      name: "vendor",
-      chunks(chunk) {
-        return true;
-      },
-    },
-  },
+  // optimization: {
+  //   splitChunks: {
+  //     name: "vendor",
+  //     chunks(chunk) {
+  //       return true;
+  //     },
+  //   },
+  // },
   resolve: {
     extensions: [".js"],
   },

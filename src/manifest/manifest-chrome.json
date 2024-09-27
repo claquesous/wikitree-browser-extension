@@ -22,7 +22,7 @@
   },
   "web_accessible_resources": [
     {
-      "matches": ["https://*.wikitree.com/*", "https://wikitree.sdms.si/*"],
+      "matches": ["https://*.wikitree.com/*", "https://wikitree.sdms.si/*", "https://www.ancestry.com/*"],
       "resources": [
         "images/*",
         "features/wtPlus/templatesExp.json",

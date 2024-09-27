@@ -1,5 +1,6 @@
 import $ from "jquery";
 import Dexie from "dexie";
+const wikitreeLogoURL = chrome.runtime.getURL("images/we128.png");
 
 const db = new Dexie('WikitreeLinks');
 db.version(1).stores({
@@ -32,4 +33,25 @@ $(async function () {
   $("nav.pageCrumbs").after($input);
 
   $input.on("blur", processLink);
+
+  let foundFamily = false;
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0 && !foundFamily) {
+          const $familyCards = $("section.familySection .researchList a.card");
+          foundFamily ||= $familyCards;
+          $familyCards.each(async (_,element) => {
+            const [match, personId] = element.href.match(/\/person\/([\d]+)/);
+            const link = await getLink("ancestry", treeId, personId);
+            if (link) {
+              $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right"/>`);
+            } else {
+              $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right; filter: grayscale(100%)"/>`);
+            }
+          });
+        }
+    });
+  });
+  observer.observe($('.personPageFacts')[0], { childList: true });
+
 });

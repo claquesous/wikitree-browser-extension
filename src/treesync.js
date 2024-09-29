@@ -55,8 +55,8 @@ async function processFamily(family, $cards) {
       let lifeRangeYears = $(card).find(".userCardSubTitle").text().split("–");
       if (personIsMatch(person, name, ...lifeRangeYears)) {
         await setLink("ancestry", treeId, $(card).attr("id").substring(6), person.Name);
-        $(card).find("img").attr("title", person.Name);
-        $(card).find("img").attr("style", "float: right");
+        $(card).find("img.wikitree").attr("title", person.Name);
+        $(card).find("img.wikitree").attr("style", "float: right");
       }
     }
   }
@@ -72,10 +72,10 @@ $(function () {
             const [match, personId] = element.href.match(/\/person\/([\d]+)/);
             const link = await getLink("ancestry", treeId, personId);
             if (link) {
-              $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" title="${personId}" width="25" style="float: right"/>`);
+              $(element).append(`<img class="wikitree" src="${wikitreeLogoURL}" alt="wikitreelogo" title="${personId}" width="25" style="float: right"/>`);
             } else {
               fullyLinked = false;
-              $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right; filter: grayscale(100%)"/>`);
+              $(element).append(`<img class="wikitree" src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right; filter: grayscale(100%)"/>`);
             }
           });
 

@@ -23,31 +23,35 @@ async function getPeople(personId) {
   return Object.values(data[0].people);
 }
 
+let $familyCards;
+
 async function processLink(event) {
   const wikitreeId = event.target.value;
   if (wikitreeId.match(/\w+\-\d+/)) {
     await setLink("ancestry", treeId, personId, wikitreeId);
 
-    // call api
-    let person = await getPeople(wikitreeId);
-    console.log(person);
+    processFamily(await getPeople(wikitreeId), $familyCards);
   }
 }
 
-$(async function () {
-  const link = await getLink("ancestry", treeId, personId);
-  const $input = $(`<input type="text" class="w16${link ? " success" : ""}"
-    placeholder="Wikitree ID" value="${link?.wikitreeId||""}"></input>`);
-  $("nav.pageCrumbs").after($input);
+async function processFamily(family, $cards) {
+  for (let person of family) {
+    for (let card of $cards) {
+      if (person.BirthName === $(card).find(".userCardTitle").text() &&
+        (`${person.BirthDate.substr(0,4)}–${person.DeathDate.substr(0,4)}`) === $(card).find(".userCardSubTitle").text()) {
+        await setLink("ancestry", treeId, $(card).attr("id").substr(6), person.Name);
+      } else {
+        console.log(person.BirthName, $(card).find(".userCardTitle").text(), `${person.BirthDate.substr(0,4)}-${person.DeathDate.substr(0,4)}`, $(card).find(".userCardSubTitle").text());
+      }
+    }
+  }
+}
 
-  $input.on("blur", processLink);
-
-  let foundFamily = false;
+$(function () {
   const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-        if (mutation.addedNodes.length > 0 && !foundFamily) {
-          const $familyCards = $("section.familySection .researchList a.card");
-          foundFamily ||= $familyCards;
+    mutations.forEach(async function(mutation) {
+        if (mutation.addedNodes.length > 0 && !$familyCards) {
+          $familyCards = $("section.familySection .researchList a.card");
           $familyCards.each(async (_,element) => {
             const [match, personId] = element.href.match(/\/person\/([\d]+)/);
             const link = await getLink("ancestry", treeId, personId);
@@ -57,6 +61,13 @@ $(async function () {
               $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right; filter: grayscale(100%)"/>`);
             }
           });
+
+          const link = await getLink("ancestry", treeId, personId);
+          const $input = $(`<input type="text" class="w16${link ? " success" : ""}"
+            placeholder="Wikitree ID" value="${link?.wikitreeId||""}"></input>`);
+          $("nav.pageCrumbs").after($input);
+
+          $input.on("blur", processLink);
         }
     });
   });

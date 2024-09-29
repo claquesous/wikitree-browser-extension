@@ -17,12 +17,20 @@ async function setLink(site, treeId, personId, wikitreeId) {
   return await db.links.put({site, treeId, personId, wikitreeId})
 }
 
+async function getPeople(personId) {
+  const response = await fetch(`https://apps.wikitree.com/apps/beacall6/api/get_people.php?id=${personId}&ancestors=1&descendants=1&fields=BirthDate,BirthLocation,DeathDate,DeathLocation,Derived.BirthName,Name`);
+  const data = await response.json();
+  return Object.values(data[0].people);
+}
+
 async function processLink(event) {
   const wikitreeId = event.target.value;
   if (wikitreeId.match(/\w+\-\d+/)) {
     await setLink("ancestry", treeId, personId, wikitreeId);
 
     // call api
+    let person = await getPeople(wikitreeId);
+    console.log(person);
   }
 }
 

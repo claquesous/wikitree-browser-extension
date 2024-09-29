@@ -10,11 +10,11 @@ db.version(1).stores({
 const [_, treeId, personId] = window.location.pathname.match(/\/tree\/([\d]+)\/person\/([\d]+)/);
 
 async function getLink(site, treeId, personId) {
-  return await db.links.get({site, treeId, personId})
+  return await db.links.get({site, treeId, personId});
 }
 
 async function setLink(site, treeId, personId, wikitreeId) {
-  return await db.links.put({site, treeId, personId, wikitreeId})
+  return await db.links.put({site, treeId, personId, wikitreeId});
 }
 
 async function getPeople(personId) {
@@ -25,23 +25,26 @@ async function getPeople(personId) {
 
 let $familyCards;
 
-async function processLink(event) {
+async function parseLink(event) {
   const wikitreeId = event.target.value;
   if (wikitreeId.match(/\w+\-\d+/)) {
-    await setLink("ancestry", treeId, personId, wikitreeId);
-
-    processFamily(await getPeople(wikitreeId), $familyCards);
+    await processLink(wikitreeId);
   }
+}
+
+async function processLink(wikitreeId) {
+  await setLink("ancestry", treeId, personId, wikitreeId);
+  await processFamily(await getPeople(wikitreeId), $familyCards);
 }
 
 async function processFamily(family, $cards) {
   for (let person of family) {
     for (let card of $cards) {
       if (person.BirthName === $(card).find(".userCardTitle").text() &&
-        (`${person.BirthDate.substr(0,4)}–${person.DeathDate.substr(0,4)}`) === $(card).find(".userCardSubTitle").text()) {
-        await setLink("ancestry", treeId, $(card).attr("id").substr(6), person.Name);
-      } else {
-        console.log(person.BirthName, $(card).find(".userCardTitle").text(), `${person.BirthDate.substr(0,4)}-${person.DeathDate.substr(0,4)}`, $(card).find(".userCardSubTitle").text());
+        (`${person.BirthDate.substring(0,4)}–${person.DeathDate.substring(0,4)}`) === $(card).find(".userCardSubTitle").text()) {
+        await setLink("ancestry", treeId, $(card).attr("id").substring(6), person.Name);
+        $(card).find("img").attr("title", person.Name);
+        $(card).find("img").attr("style", "float: right");
       }
     }
   }
@@ -51,13 +54,15 @@ $(function () {
   const observer = new MutationObserver(function(mutations) {
     mutations.forEach(async function(mutation) {
         if (mutation.addedNodes.length > 0 && !$familyCards) {
+          let fullyLinked = true;
           $familyCards = $("section.familySection .researchList a.card");
           $familyCards.each(async (_,element) => {
             const [match, personId] = element.href.match(/\/person\/([\d]+)/);
             const link = await getLink("ancestry", treeId, personId);
             if (link) {
-              $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right"/>`);
+              $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" title="${personId}" width="25" style="float: right"/>`);
             } else {
+              fullyLinked = false;
               $(element).append(`<img src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right; filter: grayscale(100%)"/>`);
             }
           });
@@ -67,7 +72,11 @@ $(function () {
             placeholder="Wikitree ID" value="${link?.wikitreeId||""}"></input>`);
           $("nav.pageCrumbs").after($input);
 
-          $input.on("blur", processLink);
+          $input.on("blur", parseLink);
+
+          if (!fullyLinked && !!link?.wikitreeId) {
+            await processLink(link.wikitreeId);
+          }
         }
     });
   });

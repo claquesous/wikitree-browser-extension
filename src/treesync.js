@@ -37,8 +37,12 @@ async function processLink(wikitreeId) {
   await processFamily(await getPeople(wikitreeId), $familyCards);
 }
 
+function stripAccents(str) {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 function personIsMatch(person, name, birthYear, deathYear) {
-  return person.BirthName === name &&
+  return stripAccents(person.BirthName) === stripAccents(name) &&
     person.BirthDate.substring(0,4) === birthYear &&
     (person.DeathDate.substring(0,4) === deathYear ||
     person.DeathDate.substring(0,4) === "0000" && deathYear === "");

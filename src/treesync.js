@@ -37,11 +37,19 @@ async function processLink(wikitreeId) {
   await processFamily(await getPeople(wikitreeId), $familyCards);
 }
 
+function personIsMatch(person, name, birthYear, deathYear) {
+  return person.BirthName === name &&
+    person.BirthDate.substring(0,4) === birthYear &&
+    (person.DeathDate.substring(0,4) === deathYear ||
+    person.DeathDate.substring(0,4) === "0000" && deathYear === "");
+}
+
 async function processFamily(family, $cards) {
   for (let person of family) {
     for (let card of $cards) {
-      if (person.BirthName === $(card).find(".userCardTitle").text() &&
-        (`${person.BirthDate.substring(0,4)}–${person.DeathDate.substring(0,4)}`) === $(card).find(".userCardSubTitle").text()) {
+      let name = $(card).find(".userCardTitle").text();
+      let lifeRangeYears = $(card).find(".userCardSubTitle").text().split("–");
+      if (personIsMatch(person, name, ...lifeRangeYears)) {
         await setLink("ancestry", treeId, $(card).attr("id").substring(6), person.Name);
         $(card).find("img").attr("title", person.Name);
         $(card).find("img").attr("style", "float: right");

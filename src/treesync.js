@@ -72,7 +72,7 @@ $(function () {
             const [match, personId] = element.href.match(/\/person\/([\d]+)/);
             const link = await getLink("ancestry", treeId, personId);
             if (link) {
-              $(element).append(`<img class="wikitree" src="${wikitreeLogoURL}" alt="wikitreelogo" title="${personId}" width="25" style="float: right"/>`);
+              $(element).append(`<img class="wikitree" src="${wikitreeLogoURL}" alt="wikitreelogo" title="${link.wikitreeId}" width="25" style="float: right"/>`);
             } else {
               fullyLinked = false;
               $(element).append(`<img class="wikitree" src="${wikitreeLogoURL}" alt="wikitreelogo" width="25" style="float: right; filter: grayscale(100%)"/>`);
